@@ -1,3 +1,14 @@
+#!/bin/bash
+installconky () {
+	cd "$HOME" || exit
+	mkdir .conky
+	mkdir .fonts
+	cd "$HOME/.conky" || exit
+	touch Weekday.conf
+	touch Date.conf
+	touch conky.sh
+	touch convert.lua
+	cat <<'EOF' > convert.lua
 #! /usr/bin/lua
 
 local usage = [[
@@ -159,3 +170,159 @@ if conky == nil then
 else
     return assert(load(converted, 'converted config'));
 end;
+EOF
+
+
+cat <<'EOF' > conky.sh
+#!/bin/bash
+conky -c "$HOME/.conky/Weekday.conf" &
+conky -c "$HOME/.conky/Date.conf"
+EOF
+
+cat <<'EOF' > Date.conf
+conky.config = {
+-- Conky settings #
+	background = false,
+	update_interval = 30,
+	double_buffer = true,
+	no_buffers = true,
+
+-- Window specifications #
+	own_window = true,
+	own_window_type = 'normal',
+	own_window_hints = 'undecorated,below,sticky,skip_taskbar,skip_pager',
+	own_window_title = '',
+	own_window_transparent = true,
+	own_window_argb_visual = true,
+	own_window_argb_value = 200,
+
+	minimum_width = 252, minimum_height = 100,
+
+-- Alignment #
+	alignment = 'top_middle',
+	gap_x = -10,
+	gap_y = 160,
+
+	border_inner_margin = 15,
+	border_outer_margin = 0,
+
+-- Graphics settings #
+	draw_shades = false,
+	draw_outline = false,
+	draw_borders = false,
+	draw_graph_borders = false,
+
+-- Text settings #
+	use_xft = true,
+	xftalpha = 0,
+	font = 'Neptune:size=18',
+
+-- Color scheme #
+	default_color = '#333333',
+
+	color1 = '#0099CC',
+	color2 = '#9933CC',
+	color3 = '#669900',
+	color4 = '#FF8800',
+	color5 = '#CC0000',
+	color6 = '#AAAAAA',
+	color7 = '#DDDDDD',
+
+};
+
+conky.text = [[
+${alignc}$font${color D6D5D4}${time %d}$color ${time  %B} ${time %Y}$font
+${voffset -50}
+]];
+EOF
+
+cat <<'EOF' > Weekday.conf
+conky.config = {
+--Conky By Jesse Avalos See me on Eye candy Linux (Google +) for more conkys.
+	background = true,
+	update_interval = 1,
+
+	cpu_avg_samples = 2,
+	net_avg_samples = 2,
+	temperature_unit = 'celsius',
+
+	double_buffer = true,
+	no_buffers = true,
+	text_buffer_size = 2048,
+	alignment = 'top_middle',
+	gap_x = 0,
+	gap_y = 25,
+	minimum_width = 0, minimum_height = 550,
+	maximum_width = 850,
+	own_window = true,
+	own_window_type = 'desktop',
+	own_window_transparent = true,
+	own_window_hints = 'undecorated,below,sticky,skip_taskbar,skip_pager',
+	own_window_argb_visual = true,
+	own_window_argb_value = 0,
+
+	border_inner_margin = 0,
+	border_outer_margin = 0,
+
+
+	draw_shades = false,
+	draw_outline = false,
+	draw_borders = false,
+	draw_graph_borders = false,
+	default_shade_color = '#112422',
+
+	use_xft = true,
+	font = 'Neptune:size=10',
+	xftalpha = 0,
+	uppercase = true,
+
+	default_color = '#D6D5D4',
+	own_window_colour = '#000000',
+};
+
+conky.text = [[
+
+
+${font Anurati-Regular:size=75}${color D6D5D4}${time %A}
+
+
+]];
+EOF
+# Extract the first link from the first URL of Anurati Font
+anuratifont_link=$(curl -s "https://befonts.com/anurati-font.html" | grep -o "https://befonts.com/downfile[^'\"]*" | sed 's/\&amp;/\&/g' | head -1)
+if [ -z "$anuratifont_link" ]; then
+    echo "First download link not found. Exiting."
+    exit 1
+fi
+
+# Extract the final download link from the first link of the Anurati Font
+anuratifont_downloadlink=$(curl -s "$anuratifont_link" | grep -o "https://befonts.com/wp-content/uploads[^'\"]*" | sed 's/\&amp;/\&/g' | head -1)
+if [ -z "$anuratifont_downloadlink" ]; then
+    echo "Final download link not found. Exiting."
+    exit 1
+fi
+
+# Download the zip file
+filename=$(basename "$anuratifont_downloadlink")
+curl -o "$filename" "$anuratifont_downloadlink"
+echo "File downloaded: $filename"
+7z x $filename
+
+# Extract the first link from the first URL of the Neptune Font
+neptunefont_link=$(curl -s "https://www.freefonts.io/downloads/neptune-font/" | grep -o "https://www.freefonts.io/wp-content/uploads[^'\"]*" | sed 's/\&amp;/\&/g' | head -1)
+if [ -z "$neptunefont_link" ]; then
+    echo "First download link not found. Exiting."
+    exit 1
+fi
+
+# Download the zip file
+filename=$(basename "$neptunefont_link")
+curl -o "$filename" "$neptunefont_link"
+echo "File downloaded: $filename"
+7z x $filename
+
+find . -type f -name "*.otf" ! -path "./.*" -exec mv {} . \;
+rm -r */
+rm *.zip
+cp *.otf "$HOME/.fonts"
+}
