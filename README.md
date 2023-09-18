@@ -3,6 +3,7 @@
 ## Description
 
 This collection of bash scripts allows me (oor you) to automatically install Pop!_OS extensions, themes and software and configure them all the way I want. <br>
+It needs **pkexec** to run properly. <br>
 
 ## Instructions:
 
