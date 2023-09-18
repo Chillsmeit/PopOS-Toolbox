@@ -16,11 +16,15 @@ Clone the repository: (preferably to your Home folder)
 ```
 git clone https://github.com/Chillsmeit/dotfilesPopOS
 ```
+CD into the directory:
+```
+cd dotfilesPopOS
+```
 Make the script executable:
 ```
-chmod +x rarbg_automkvmerger.sh
+chmod +x dotfiles_mainmenu.sh
 ```
 Run the script **without** sudo privileges:
 ```
-./rarbg_automkvmerger.sh
+./dotfiles_mainmenu.sh
 ```
