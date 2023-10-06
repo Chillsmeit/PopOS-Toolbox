@@ -23,9 +23,9 @@ cd dotfilesPopOS
 ```
 Make the script executable:
 ```
-chmod +x dotfiles_mainmenu.sh
+chmod +x main.sh
 ```
 Run the script **without** sudo privileges:
 ```
-./dotfiles_mainmenu.sh
+./main.sh
 ```
