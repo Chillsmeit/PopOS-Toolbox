@@ -3,9 +3,7 @@ clear
 themes () {
 	# Install Extensions
 	while true; do
-	Main_Menu_Upper_Text
-	echo -e "${orange}|░${lightgray}    Do you want to install and configure themes?${orange}    ░|"
-	Main_Menu_Bottom_Text
+	Menu_OneMessage "Do you want to install and configure themes?"
 
 	#Ask Update Question
 	read -p "Enter your choice (y/n): " answer_themes
@@ -13,10 +11,11 @@ themes () {
 	if answer_yes "$answer_themes"; then
 
 		# Export Array of required package names
-		export required_dependencies=(
+		required_dependencies=(
 		"gnome-shell-extensions"
 		"gnome-tweaks"
 		"gnome-shell-extension-prefs"
+		"sound-theme-freedesktop"
 		)
 		
 		# Execute missingpackages to check if packages are already installed
@@ -25,14 +24,30 @@ themes () {
 
 		# Enable User Extensions in Gnome
 		gsettings set org.gnome.shell disable-user-extensions false
-
-		# Install Extension Manager
-		flatpak install flathub com.mattjakeman.ExtensionManager 
+		
+		# Export Array of required flatpak names
+		required_flatpaks=("com.mattjakeman.ExtensionManager")
+		
+		# Load installflatpaks.sh
+		source "subscripts/installflatpaks.sh"
+		installflatpaks
 
 		# Check if User Shell Theme extension is installed
-		export required_extensions=("user-theme@gnome-shell-extensions.gcampax.github.com")
+		required_extensions=("user-theme@gnome-shell-extensions.gcampax.github.com")
+		
+		# Load installextensions.sh and run installextensions
 		source "subscripts/installextensions.sh"
 		installextensions
+		
+		# Load extensions.sh for variables
+		source "subscripts/extensions.sh"
+
+		# Enable themes shell Extension
+		$genable user-theme@gnome-shell-extensions.gcampax.github.com
+		
+		# Create Themes Directory in Home Folder
+		mkdir $HOME/Themes
+		cd $HOME/Themes
 		
 		# Download Themes
 		git clone https://github.com/vinceliuice/Colloid-gtk-theme
@@ -40,31 +55,38 @@ themes () {
 		git clone https://github.com/vinceliuice/vimix-gtk-themes
 		git clone https://github.com/vinceliuice/WhiteSur-icon-theme
 		git clone https://github.com/vinceliuice/Jasper-gtk-theme
+		
+		cd $script_directory
+		
+		# Make subscripts executable
+		chmod +x $HOME/Themes/*/*
 
 		# Install Themes
-		cd "$HOME/Colloid-gtk-theme" || exit && sudo ./install.sh
-		cd "$HOME/Colloid-icon-theme" || exit && sudo ./install.sh
-		cd "$HOME/Colloid-icon-theme/cursors" || exit && sudo ./install.sh
-		cd "$HOME/vimix-gtk-themes" || exit && sudo ./install.sh
-		cd "$HOME/WhiteSur-icon-theme" || exit && sudo ./install.sh
-		cd "$HOME/Jasper-gtk-theme" || exit && sudo ./install.sh
+		$HOME/Themes/Colloid-gtk-theme/install.sh || exit
+		$HOME/Themes/Colloid-gtk-theme/install.sh || exit
+		$HOME/Themes/Colloid-icon-theme/install.sh || exit
+		$HOME/Themes/Colloid-icon-theme/cursors/install.sh || exit
+		$HOME/Themes/vimix-gtk-themes/install.sh || exit
+		$HOME/Themes/WhiteSur-icon-theme/install.sh || exit
+		$HOME/Themes/Jasper-gtk-theme/install.sh || exit
 
-		# Set the Themes in the Gnome
-		gsettings --schemadir ~/.local/share/gnome-shell/extensions/user-theme@gnome-shell-extensions.gcampax.github.com/schemas/ set org.gnome.shell.extensions.user-theme name Jasper-Dark
+		# Set user theme in the Gnome extension
+		extension_name="user-theme@gnome-shell-extensions.gcampax.github.com"
+		extension_id="org.gnome.shell.extensions.user-theme"
+		eval "$gchange name 'Jasper-Dark'"
+
+		# Set Themes
 		gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 		gsettings set org.gnome.desktop.interface cursor-theme 'Colloid-cursors'
 		gsettings set org.gnome.desktop.interface gtk-theme 'vimix-dark-doder'
 		gsettings set org.gnome.desktop.interface icon-theme 'WhiteSur-dark'
-
-		# Install FreeDesktop Sound Themes
-		sudo apt install sound-theme-freedesktop -y
 		
 		# Enable FreeDesktop Sound Themes
 		gsettings set org.gnome.desktop.sound theme-name 'freedesktop'
 		
 		# Set Desktop Backgrounds
-		gsettings set org.gnome.desktop.background picture-uri "file:///usr/share/backgrounds/pop/jasper-van-der-meij-97274-edit.jpg"
-		gsettings set org.gnome.desktop.background picture-uri-dark "file:///usr/share/backgrounds/pop/jasper-van-der-meij-97274-edit.jpg"
+		gsettings set org.gnome.desktop.background picture-uri "file:///usr/share/backgrounds/pop/tony-webster-97532.jpg"
+		gsettings set org.gnome.desktop.background picture-uri-dark "file:///usr/share/backgrounds/pop/tony-webster-97532.jpg"
 		
 		# Disable Mouse Accelaration
 		gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'
@@ -121,7 +143,7 @@ themes () {
 		gsettings set org.gnome.shell.extensions.dash-to-dock background-opacity 0.80
 		
 		# Enable Custom Dock Color Support
-		gsettings set org.gnome.shell.extensions.dash-to-dock custom-background-color
+		gsettings set org.gnome.shell.extensions.dash-to-dock custom-background-color true
 		
 		# Enable Minimize or Previews in the Dock when clicking Apps
 		gsettings set org.gnome.shell.extensions.dash-to-dock click-action 'minimize-or-previews'
@@ -152,9 +174,6 @@ themes () {
 
 		# Change Gnome font to Noto Sans
 		gsettings set org.gnome.desktop.interface font-name 'Noto Sans 10'
-
-		# Change Gnome Monospace Font
-		gsettings set org.gnome.desktop.interface font-name 'Fira Mono 11'
 
 		# Change Gnome font to Ubuntu Medium
 		gsettings set org.gnome.desktop.wm.preferences titlebar-font 'Ubuntu Medium 10'

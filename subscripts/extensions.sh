@@ -3,9 +3,7 @@ clear
 extensions () {
 	# Confirmation Menu
 	while true; do
-	Main_Menu_Upper_Text
-	echo -e "${orange}|░${lightgray}    Do you want to install and configure the extensions?${orange}    ░|"
-	Main_Menu_Bottom_Text
+	Menu_OneMessage "Do you want to install and configure the extensions?"
 
 	# Read user choice
 	read -p "Enter your choice (y/n): " answer_extensions
@@ -15,42 +13,39 @@ extensions () {
 		
 		# Display Menu for installing dependencies
 		clear
-		Main_Menu_Upper_Text
-		echo -e "${orange}|░${red}                 Installing dependencies...${orange}                 ░|"
-		Main_Menu_Bottom_Text
-		
-		# Write all terminal output to log file
-		exec > logs/subscript_log.txt 2>&1
-		
-		# Export Array of required dependencies
-		export required_dependencies=(
+		messagecolor=$red
+		Menu_TwoMessages "Installing dependencies" "Please wait..."
+
+		# Array of required dependencies
+		required_dependencies=(
 		"gnome-shell-extensions"
 		"gnome-shell-extension-prefs"
 		"gnome-tweaks"
+		"lm-sensors" # Needed for Freon
+		"gir1.2-gtop-2.0" # Needed for TopHat
 		)
 		
 		# Load installdependencies.sh
 		source "subscripts/installdependencies.sh"
+		
 		# Execute installdependencies function to check if extensions are already installed and install if they're not
-		installdependencies
+		installdependencies > logs/extensions_log.txt 2>&1 # Send output from installdependencies function to logfile
+
+		sleep 1
 
 		# Display Menu for installing extensions
-		{
 		clear
-		Main_Menu_Upper_Text
-		echo -e "${orange}|░${red}                 Installing extensions...${orange}                 ░|"
-		Main_Menu_Bottom_Text
-		} > /dev/tty # Temporarily disable sending output to log file
+		messagecolor=$red
+		Menu_TwoMessages "Installing extensions"  "Please wait..."
 
-		# Export Array of required extensions
-		export required_extensions=(
+		# Array of required extensions
+		required_extensions=(
 		"volume-mixer@evermiss.net"
 		"avatar@pawel.swiszcz.com"
 		"blur-my-shell@aunetx"
 		"custom-hot-corners-extended@G-dH.github.com"
 		"freon@UshakovVasilii_Github.yahoo.com"
 		"gamemode@christian.kellner.me"
-		"gsconnect@andyholmes.github.io"
 		"just-perfection-desktop@just-perfection"
 		"noannoyance@daase.net"
 		"openweather-extension@jenslody.de"
@@ -62,10 +57,12 @@ extensions () {
 
 		# Load installextensions.sh
 		source "subscripts/installextensions.sh"
+		
 		# Execute installextensions function to check if extensions are already installed and install if they're not
-		installextensions
+		installextensions >> logs/extensions_log.txt 2>&1 # Append output from installextensions function to logfile
 
 		# Enable User Themes Extension if it was installed
+		{
 		genable="gnome-extensions enable"
 		$genable user-theme@gnome-shell-extensions.gcampax.github.com
 
@@ -77,31 +74,27 @@ extensions () {
 		$gdisable custom-hot-corners-extended@G-dH.github.com
 		$gdisable freon@UshakovVasilii_Github.yahoo.com
 		$gdisable gamemode@christian.kellner.me
-		$gdisable gsconnect@andyholmes.github.io
 		$gdisable just-perfection-desktop@just-perfection
 		$gdisable noannoyance@daase.net
 		$gdisable openweather-extension@jenslody.de
 		$gdisable pi-hole@fnxweb.com
 		$gdisable rounded-window-corners@yilozt
 		$gdisable tophat@fflewddur.github.io
+		} >> logs/extensions_log.txt 2>&1 # Append output from installextensions function to logfile
 
 		# Display Menu for installing flatpaks
-		{
 		clear
-		Main_Menu_Upper_Text
-		echo -e "${orange}|░${red}                 Installing flatpaks...${orange}                 ░|"
-		Main_Menu_Bottom_Text
-		} > /dev/tty # Temporarily disable sending output to log file
+		messagecolor=$red
+		Menu_TwoMessages "Installing flatpaks"  "Please wait..."
 
-		# Export Array of required flatpaks
-		export required_flatpaks=(
-		"com.mattjakeman.ExtensionManager"
-		)
+		# Array of required flatpaks
+		required_flatpaks=("com.mattjakeman.ExtensionManager")
 
 		# Load installflatpaks.sh
 		source "subscripts/installflatpaks.sh"
+		
 		# Execute installflatpaks function to check if flatpaks are already installed and install if they're not
-		installflatpaks
+		installflatpaks >> logs/extensions_log.txt 2>&1 # Append output from installflatpaks function to logfile
 		
 		# In the future, to manually list current schema settings, you need to do:
 		# gsettings --schemadir ~/.local/share/gnome-shell/extensions/avatar@pawel.swiszcz.com/schemas/ list-recursively org.gnome.shell.extensions.avatar
@@ -110,16 +103,13 @@ extensions () {
 		# look for the schemaid
 		
 		# Display Menu for extension configuration
-		{
 		clear
-		Main_Menu_Upper_Text
-		echo -e "${orange}|░${red}                 Configuring extensions...${orange}                 ░|"
-		Main_Menu_Bottom_Text
-		} > /dev/tty # Temporarily disable sending output to log file
-		
+		messagecolor=$red
+		Menu_TwoMessages "Configuring extensions"  "Please wait..."
+
 		# Schema directory variable to make change extensions settings
 		gchange="gsettings --schemadir ~/.local/share/gnome-shell/extensions/\$extension_name/schemas/ set \$extension_id"
-		
+		{
 		######################################
 		# Configure Application Volume Mixer #
 		######################################
@@ -269,96 +259,6 @@ extensions () {
 		eval "$gchange noise-lightness 0.0"
 		eval "$gchange sigma 30"
 
-		###################
-		# Configure Freon #
-		###################		
-
-		# Export Array of required dependencies for Freon
-		export required_dependencies=("lm-sensors")
-		
-		# Load installdependencies.sh
-		source "subscripts/installdependencies.sh"
-		# Execute installdependencies function to check if dependencies are already installed and install if they're not
-		installdependencies
-
-		
-		extension_name="freon@UshakovVasilii_Github.yahoo.com"
-		extension_id="org.gnome.shell.extensions.freon"
-		eval "$gchange group-rotationrate true"
-		eval "$gchange group-temperature true"
-		eval "$gchange group-voltage true"
-		eval "$gchange panel-box-index 0"
-		eval "$gchange position-in-panel 'left'"
-		eval "$gchange show-decimal-value false"
-		eval "$gchange show-icon-on-panel true"
-		eval "$gchange show-power true"
-		eval "$gchange show-power-unit true"
-		eval "$gchange show-rotationrate true"
-		eval "$gchange show-rotationrate-unit true"
-		eval "$gchange show-temperature true"
-		eval "$gchange show-temperature-unit true"
-		eval "$gchange show-voltage true"
-		eval "$gchange show-voltage-unit true"
-		eval "$gchange unit 'centigrade'"
-		eval "$gchange update-time 5"
-		eval "$gchange use-drive-hddtemp false"
-		eval "$gchange use-drive-nvmecli false"
-		eval "$gchange use-drive-smartctl false"
-		eval "$gchange use-drive-udisks2 false"
-		eval "$gchange use-generic-liquidctl false"
-		eval "$gchange use-generic-lmsensors true"
-		
-		clear
-		while true; do
-			clear
-			exec > /dev/tty 2>&1
-			Main_Menu_Upper_Text
-			echo -e "${orange}|░${lightgray}                   Which GPU do you have?${orange}                   ░|"
-			echo -e "${orange}|░                                                            ░|"
-			echo -e "${orange}|░${lightgray}   1. AMD${orange}                                                   ░|"
-			echo -e "${orange}|░${lightgray}   2. NVIDIA${orange}                                                ░|"
-			echo -e "${orange}|░${lightgray}   3. NVIDIA Bumblebee (FOSS Optimus Driver for Laptops)${orange}    ░|"
-			Main_Menu_Bottom_Text
-			
-			read -p "Choose a number: " gpu_choice
-
-			
-			if [[ "$gpu_choice" == "1" ]]; then
-				# Append to existing log file
-				exec >> logs/subscript_log.txt 2>&1
-				extension_name="freon@UshakovVasilii_Github.yahoo.com"
-				extension_id="org.gnome.shell.extensions.freon"
-				eval "$gchange use-gpu-aticonfig true"
-				eval "$gchange use-gpu-nvidia false"
-				eval "$gchange use-gpu-bumblebeenvidia false"
-				break
-			elif [[ "$gpu_choice" == "2" ]]; then
-				# Append to existing log file
-				exec >> logs/subscript_log.txt 2>&1
-				extension_name="freon@UshakovVasilii_Github.yahoo.com"
-				extension_id="org.gnome.shell.extensions.freon"
-				eval "$gchange use-gpu-aticonfig false"
-				eval "$gchange use-gpu-nvidia true"
-				eval "$gchange use-gpu-bumblebeenvidia false"
-				break
-			elif [[ "$gpu_choice" == "3" ]]; then
-				# Append to existing log file
-				exec >> logs/subscript_log.txt 2>&1
-				extension_name="freon@UshakovVasilii_Github.yahoo.com"
-				extension_id="org.gnome.shell.extensions.freon"
-				eval "$gchange use-gpu-aticonfig false"
-				eval "$gchange use-gpu-nvidia false"
-				eval "$gchange use-gpu-bumblebeenvidia true"
-				break
-			else
-				clear
-				Main_Menu_Upper_Text
-				echo -e "${orange}|░${red}                   Invalid Choice${orange}                   ░|"
-				Main_Menu_Bottom_Text
-				pause 2
-			fi
-		done
-
 		######################
 		# Configure Gamemode #
 		######################
@@ -499,13 +399,6 @@ extensions () {
 		####################
 		# Configure TopHat #
 		####################
-		# Export Array of required dependencies for Freon
-		export required_dependencies=("gir1.2-gtop-2.0")
-		
-		# Load installdependencies.sh
-		source "subscripts/installdependencies.sh"
-		# Execute installdependencies function to check if extensions are already installed and install if they're not
-		installdependencies
 		
 		extension_name="tophat@fflewddur.github.io"
 		extension_id="org.gnome.shell.extensions.tophat"
@@ -527,9 +420,118 @@ extensions () {
 		eval "$gchange show-mem true"
 		eval "$gchange show-net false"
 		
-		# Remove KDEConnect because it sucks in Gnome, GSConnect was installed which works better
-		sudo apt-get remove kdeconnect -y
+		###################
+		# Configure Freon #
+		###################		
+		extension_name="freon@UshakovVasilii_Github.yahoo.com"
+		extension_id="org.gnome.shell.extensions.freon"
+		eval "$gchange group-rotationrate true"
+		eval "$gchange group-temperature true"
+		eval "$gchange group-voltage true"
+		eval "$gchange panel-box-index 0"
+		eval "$gchange position-in-panel 'left'"
+		eval "$gchange show-decimal-value false"
+		eval "$gchange show-icon-on-panel true"
+		eval "$gchange show-power true"
+		eval "$gchange show-power-unit true"
+		eval "$gchange show-rotationrate true"
+		eval "$gchange show-rotationrate-unit true"
+		eval "$gchange show-temperature true"
+		eval "$gchange show-temperature-unit true"
+		eval "$gchange show-voltage true"
+		eval "$gchange show-voltage-unit true"
+		eval "$gchange unit 'centigrade'"
+		eval "$gchange update-time 5"
+		eval "$gchange use-drive-hddtemp false"
+		eval "$gchange use-drive-nvmecli false"
+		eval "$gchange use-drive-smartctl false"
+		eval "$gchange use-drive-udisks2 false"
+		eval "$gchange use-generic-liquidctl false"
+		eval "$gchange use-generic-lmsensors true"
+		} >> logs/extensions_log.txt 2>&1 # Append output from extension configuration to logfile
 		
+		clear
+		while true; do
+			clear
+			Main_Menu_Upper_Text
+			echo -e "${orange}|░${lightgray}                   Which GPU do you have?${orange}                   ░|"
+			echo -e "${orange}|░                                                            ░|"
+			echo -e "${orange}|░${lightgray}   1. AMD${orange}                                                   ░|"
+			echo -e "${orange}|░${lightgray}   2. NVIDIA${orange}                                                ░|"
+			echo -e "${orange}|░${lightgray}   3. NVIDIA Bumblebee (FOSS Optimus Driver for Laptops)${orange}    ░|"
+			Main_Menu_Bottom_Text
+			
+			read -p "Choose a number: " gpu_choice
+
+			
+			if [[ "$gpu_choice" == "1" ]]; then
+				# Append to existing log file
+				exec >> logs/extensions_log.txt 2>&1 # Send global output to log
+				extension_name="freon@UshakovVasilii_Github.yahoo.com"
+				extension_id="org.gnome.shell.extensions.freon"
+				eval "$gchange use-gpu-aticonfig true"
+				eval "$gchange use-gpu-nvidia false"
+				eval "$gchange use-gpu-bumblebeenvidia false"
+				break
+			elif [[ "$gpu_choice" == "2" ]]; then
+				# Append to existing log file
+				exec >> logs/extensions_log.txt 2>&1 # Send global output to log
+				extension_name="freon@UshakovVasilii_Github.yahoo.com"
+				extension_id="org.gnome.shell.extensions.freon"
+				eval "$gchange use-gpu-aticonfig false"
+				eval "$gchange use-gpu-nvidia true"
+				eval "$gchange use-gpu-bumblebeenvidia false"
+				break
+			elif [[ "$gpu_choice" == "3" ]]; then
+				# Append to existing log file
+				exec >> logs/extensions_log.txt 2>&1 # Send global output to log
+				extension_name="freon@UshakovVasilii_Github.yahoo.com"
+				extension_id="org.gnome.shell.extensions.freon"
+				eval "$gchange use-gpu-aticonfig false"
+				eval "$gchange use-gpu-nvidia false"
+				eval "$gchange use-gpu-bumblebeenvidia true"
+				break
+			else
+				clear
+				Menu_OneMessage "Invalid Choice"
+				read -r
+			fi
+		done
+		
+		# Enable sending global output back to terminal
+		exec > /dev/tty 2>&1
+		
+		# GSConnect install
+		while true; do
+			clear
+			Menu_OneMessage "Uninstall KDEConnect and install GSConnect?"
+			
+			read -p "Enter your choice (y/n): " answer_gsconnect
+
+			# If user chose yes
+			if answer_yes "$answer_gsconnect"; then
+
+				sudo apt-get remove kdeconnect -y >> logs/extensions_log.txt 2>&1
+
+				required_extensions=("gsconnect@andyholmes.github.io")
+
+				# Load installextensions.sh
+				source "subscripts/installextensions.sh"
+				
+				# Execute installextensions function to check if extensions are already installed and install if they're not
+				installextensions >> logs/extensions_log.txt 2>&1
+				
+				break # Exit and continue script
+			
+			elif answer_no "$answer_gsconnect"; then
+				break # Exit and continue script
+
+			else # If user inputs something besides yes/no/y/n
+				echo "Invalid Choice"
+			fi
+		done
+		
+		{
 		# Enable extensions after being configured and installed
 		$genable volume-mixer@evermiss.net
 		$genable avatar@pawel.swiszcz.com
@@ -543,16 +545,15 @@ extensions () {
 		$genable pi-hole@fnxweb.com
 		$genable rounded-window-corners@yilozt
 		$genable tophat@fflewddur.github.io
-		
-        # Disable sending output to log file
-		exec > /dev/tty 2>&1
+		} >> logs/extensions_log.txt 2>&1 # Append output from installextensions function to logfile
+
 		# Exit this subscript and go back to the main menu
 		break
 
 	# If user chose no
 	elif answer_no "$answer_extensions"; then
 		break # Exit this subscript and go back to the main menu
-	
+
 	# If user inputs something besides yes/no/y/n
 	else
 		echo "Invalid Choice"

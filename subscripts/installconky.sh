@@ -1,37 +1,13 @@
 #!/bin/bash
 installconky () {
-	cd "$HOME" || exit
-	mkdir .conky
-	mkdir .fonts
-	cd "$HOME/.conky" || exit
-	touch Weekday.conf
-	touch Date.conf
-	touch conky.sh
-	touch convert.lua
-	cat <<'EOF' > convert.lua
+	mkdir "$HOME/.conky"
+	mkdir "$HOME/.fonts"
+	touch "$HOME/.conky/Weekday.conf"
+	touch "$HOME/.conky/Date.conf"
+	touch "$HOME/.conky/conky.sh"
+	touch "$HOME/.conky/convert.lua"
+	cat <<'EOF' > "$HOME/.conky/convert.lua"
 #! /usr/bin/lua
-
-local usage = [[
-Usage: convert.lua old_conkyrc [new_conkyrc]
-
-Tries to convert conkyrc from the old v1.x format to the new, lua-based format.
-
-Keep in mind that there is no guarantee that the output will work correctly
-with conky, or that it will be able to convert every conkyrc. However, it
-should provide a good starting point.
-
-Although you can use this script with only 1 arg and let it overwrite the old
-config, it's suggested to use 2 args so that the new config is written in a new
-file (so that you have backup if something went wrong).
-
-Optional: Install dos2unix. We will attempt to use this if it is available
-because Conky configs downloaded from Internet sometimes are created on DOS/Windows
-machines with different line endings than Conky configs created on Unix/Linux.
-
-For more information about the new format, read the wiki page
-<https://github.com/brndnmtthws/conky/wiki>
-]];
-
 local function quote(s)
     if not s:find("[\n'\\]") then
         return "'" .. s .. "'";
@@ -172,14 +148,13 @@ else
 end;
 EOF
 
-
-cat <<'EOF' > conky.sh
+	cat <<EOF > "$HOME/.conky/conky.sh"
 #!/bin/bash
 conky -c "$HOME/.conky/Weekday.conf" &
 conky -c "$HOME/.conky/Date.conf"
 EOF
 
-cat <<'EOF' > Date.conf
+	cat <<'EOF' > "$HOME/.conky/Date.conf"
 conky.config = {
 -- Conky settings #
 	background = false,
@@ -215,7 +190,7 @@ conky.config = {
 -- Text settings #
 	use_xft = true,
 	xftalpha = 0,
-	font = 'Neptune:size=18',
+	font = 'Neptune Trial:size=18',
 
 -- Color scheme #
 	default_color = '#333333',
@@ -236,9 +211,9 @@ ${voffset -50}
 ]];
 EOF
 
-cat <<'EOF' > Weekday.conf
+	cat <<'EOF' > "$HOME/.conky/Weekday.conf"
 conky.config = {
---Conky By Jesse Avalos See me on Eye candy Linux (Google +) for more conkys.
+--Conky
 	background = true,
 	update_interval = 1,
 
@@ -272,7 +247,7 @@ conky.config = {
 	default_shade_color = '#112422',
 
 	use_xft = true,
-	font = 'Neptune:size=10',
+	font = 'Neptune Trial:size=10',
 	xftalpha = 0,
 	uppercase = true,
 
@@ -288,41 +263,35 @@ ${font Anurati-Regular:size=75}${color D6D5D4}${time %A}
 
 ]];
 EOF
-# Extract the first link from the first URL of Anurati Font
-anuratifont_link=$(curl -s "https://befonts.com/anurati-font.html" | grep -o "https://befonts.com/downfile[^'\"]*" | sed 's/\&amp;/\&/g' | head -1)
-if [ -z "$anuratifont_link" ]; then
-    echo "First download link not found. Exiting."
-    exit 1
-fi
 
-# Extract the final download link from the first link of the Anurati Font
-anuratifont_downloadlink=$(curl -s "$anuratifont_link" | grep -o "https://befonts.com/wp-content/uploads[^'\"]*" | sed 's/\&amp;/\&/g' | head -1)
-if [ -z "$anuratifont_downloadlink" ]; then
-    echo "Final download link not found. Exiting."
-    exit 1
-fi
+	# Export Array of required package names
+	required_dependencies=(
+	"conky"
+	)
 
-# Download the zip file
-filename=$(basename "$anuratifont_downloadlink")
-curl -o "$filename" "$anuratifont_downloadlink"
-echo "File downloaded: $filename"
-7z x $filename
+	# Execute missingpackages to check if packages are already installed
+	source "subscripts/installdependencies.sh"
+	installdependencies
 
-# Extract the first link from the first URL of the Neptune Font
-neptunefont_link=$(curl -s "https://www.freefonts.io/downloads/neptune-font/" | grep -o "https://www.freefonts.io/wp-content/uploads[^'\"]*" | sed 's/\&amp;/\&/g' | head -1)
-if [ -z "$neptunefont_link" ]; then
-    echo "First download link not found. Exiting."
-    exit 1
-fi
+	# Make conky script executable
+	chmod +x "$HOME/.conky/conky.sh"
+	
+	# Create autostart directory if it doesn't exist
+	mkdir -p "$HOME/.config/autostart"
 
-# Download the zip file
-filename=$(basename "$neptunefont_link")
-curl -o "$filename" "$neptunefont_link"
-echo "File downloaded: $filename"
-7z x $filename
+	# Create .desktop entry to launch conky
+	touch "$HOME/.config/autostart/conky.desktop"
+	cat <<EOF > "$HOME/.config/autostart/conky.desktop"
+[Desktop Entry]
+Name=Conky
+Exec=$HOME/.conky/conky.sh
+Terminal=false
+Type=Application
+StartupNotify=false
+EOF
+	Menu_OneMessage "Please Follow instructions for getting the Fonts"
+	read -r "Press Enter to Continue..."
+	Menu_TwoMessages "\033]8;;https://troisieme-type.com/anurati-pro\aAnurati Free Font\033]8;;\a" "\033]8;;https://www.behance.net/gallery/17625495/Neptune-Free-Font\aNeptune Free Font\033]8;;\a"
+	read -r "Press Enter to Continue..."
 
-find . -type f -name "*.otf" ! -path "./.*" -exec mv {} . \;
-rm -r */
-rm *.zip
-cp *.otf "$HOME/.fonts"
 }
