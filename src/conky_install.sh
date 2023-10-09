@@ -1,11 +1,22 @@
 #!/bin/bash
-installconky () {
+conky_install () {
+	# Display Menu for installing dependencies
+	clear
+	messagecolor=$red
+	Menu_TwoMessages "Installing Conky" "Please wait..."
+	sleep 2
+	
+	# Send global output to logfile
+	exec > logs/conky_log.txt 2>&1
+	
+	# Create directories and files
 	mkdir "$HOME/.conky"
 	mkdir "$HOME/.fonts"
 	touch "$HOME/.conky/Weekday.conf"
 	touch "$HOME/.conky/Date.conf"
 	touch "$HOME/.conky/conky.sh"
 	touch "$HOME/.conky/convert.lua"
+	
 	cat <<'EOF' > "$HOME/.conky/convert.lua"
 #! /usr/bin/lua
 local function quote(s)
@@ -265,13 +276,11 @@ ${font Anurati-Regular:size=75}${color D6D5D4}${time %A}
 EOF
 
 	# Export Array of required package names
-	required_dependencies=(
-	"conky"
-	)
+	required_dependencies=("conky")
 
 	# Execute missingpackages to check if packages are already installed
-	source "subscripts/installdependencies.sh"
-	installdependencies
+	source "src/dependencies_install.sh"
+	dependencies_install
 
 	# Make conky script executable
 	chmod +x "$HOME/.conky/conky.sh"
@@ -289,9 +298,22 @@ Terminal=false
 Type=Application
 StartupNotify=false
 EOF
-	Menu_OneMessage "Please Follow instructions for getting the Fonts"
-	read -r "Press Enter to Continue..."
-	Menu_TwoMessages "\033]8;;https://troisieme-type.com/anurati-pro\aAnurati Free Font\033]8;;\a" "\033]8;;https://www.behance.net/gallery/17625495/Neptune-Free-Font\aNeptune Free Font\033]8;;\a"
-	read -r "Press Enter to Continue..."
 
+	# Send global output back to terminal
+	exec > /dev/tty 2>&1
+	
+	# Display Menu for installing themes
+	clear
+	messagecolor=$green
+	Menu_OneMessage "Conky installed ✔"
+	sleep 2
+	
+	clear
+	Menu_OneMessage "Please follow the Git instructions to get the Fonts"
+	read -p "$(echo -e "${orange}Press Enter to Continue...${resetcolor}")"
+	
+	clear
+	
+		Menu_TwoMessages "      \033]8;;https://troisieme-type.com/anurati-pro\aAnurati Free Font\033]8;;\a        " " \033]8;;https://www.behance.net/gallery/17625495/Neptune-Free-Font\aNeptune Free Font\033]8;;\a   "
+	read -p "$(echo -e "${orange}Press Enter to Continue...${resetcolor}")"
 }

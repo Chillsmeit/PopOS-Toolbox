@@ -1,5 +1,5 @@
 #!/bin/bash
-installextensions() {
+extensions_install() {
     for extension in "${required_extensions[@]}"; do
         # Check if the extension is installed
         if ! gnome-extensions list | grep -q "$extension"; then

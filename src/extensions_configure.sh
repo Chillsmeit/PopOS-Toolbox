@@ -1,6 +1,6 @@
 #!/bin/bash
 clear
-extensions () {
+extensions_configure () {
 	# Confirmation Menu
 	while true; do
 	Menu_OneMessage "Do you want to install and configure the extensions?"
@@ -25,11 +25,11 @@ extensions () {
 		"gir1.2-gtop-2.0" # Needed for TopHat
 		)
 		
-		# Load installdependencies.sh
-		source "subscripts/installdependencies.sh"
+		# Load dependencies_install.sh
+		source "src/dependencies_install.sh"
 		
-		# Execute installdependencies function to check if extensions are already installed and install if they're not
-		installdependencies > logs/extensions_log.txt 2>&1 # Send output from installdependencies function to logfile
+		# Execute dependencies_install function to check if extensions are already installed and install if they're not
+		dependencies_install > logs/extensions_log.txt 2>&1 # Send output from installdependencies function to logfile
 
 		sleep 1
 
@@ -55,11 +55,11 @@ extensions () {
 		"user-theme@gnome-shell-extensions.gcampax.github.com"
 		)
 
-		# Load installextensions.sh
-		source "subscripts/installextensions.sh"
+		# Load extensions_install.sh
+		source "src/extensions_install.sh"
 		
-		# Execute installextensions function to check if extensions are already installed and install if they're not
-		installextensions >> logs/extensions_log.txt 2>&1 # Append output from installextensions function to logfile
+		# Execute extensions_install function to check if extensions are already installed and install if they're not
+		extensions_install >> logs/extensions_log.txt 2>&1 # Append output from installextensions function to logfile
 
 		# Enable User Themes Extension if it was installed
 		{
@@ -80,7 +80,7 @@ extensions () {
 		$gdisable pi-hole@fnxweb.com
 		$gdisable rounded-window-corners@yilozt
 		$gdisable tophat@fflewddur.github.io
-		} >> logs/extensions_log.txt 2>&1 # Append output from installextensions function to logfile
+		} >> logs/extensions_log.txt 2>&1 # Append output from extensions_install function to logfile
 
 		# Display Menu for installing flatpaks
 		clear
@@ -90,11 +90,11 @@ extensions () {
 		# Array of required flatpaks
 		required_flatpaks=("com.mattjakeman.ExtensionManager")
 
-		# Load installflatpaks.sh
-		source "subscripts/installflatpaks.sh"
+		# Load flatpaks_install.sh
+		source "src/flatpaks_install.sh"
 		
-		# Execute installflatpaks function to check if flatpaks are already installed and install if they're not
-		installflatpaks >> logs/extensions_log.txt 2>&1 # Append output from installflatpaks function to logfile
+		# Execute flatpaks_install function to check if flatpaks are already installed and install if they're not
+		flatpaks_install >> logs/extensions_log.txt 2>&1 # Append output from flatpaks_install function to logfile
 		
 		# In the future, to manually list current schema settings, you need to do:
 		# gsettings --schemadir ~/.local/share/gnome-shell/extensions/avatar@pawel.swiszcz.com/schemas/ list-recursively org.gnome.shell.extensions.avatar
@@ -298,8 +298,6 @@ extensions () {
 		eval "$gchange dash-separator true"
 		eval "$gchange double-super-to-appgrid true"
 		eval "$gchange events-button true"
-		eval "$gchange gesture true"
-		eval "$gchange hot-corner false"
 		eval "$gchange keyboard-layout true"
 		eval "$gchange looking-glass-height 0"
 		eval "$gchange looking-glass-width 0"
@@ -307,7 +305,6 @@ extensions () {
 		eval "$gchange osd true"
 		eval "$gchange osd-position 0"
 		eval "$gchange panel true"
-		eval "$gchange panel-arrow true"
 		eval "$gchange panel-button-padding-size 0"
 		eval "$gchange panel-corner-size 0"
 		eval "$gchange panel-icon-size 0"
@@ -514,12 +511,9 @@ extensions () {
 				sudo apt-get remove kdeconnect -y >> logs/extensions_log.txt 2>&1
 
 				required_extensions=("gsconnect@andyholmes.github.io")
-
-				# Load installextensions.sh
-				source "subscripts/installextensions.sh"
 				
 				# Execute installextensions function to check if extensions are already installed and install if they're not
-				installextensions >> logs/extensions_log.txt 2>&1
+				extensions_install >> logs/extensions_log.txt 2>&1
 				
 				break # Exit and continue script
 			
@@ -545,14 +539,14 @@ extensions () {
 		$genable pi-hole@fnxweb.com
 		$genable rounded-window-corners@yilozt
 		$genable tophat@fflewddur.github.io
-		} >> logs/extensions_log.txt 2>&1 # Append output from installextensions function to logfile
+		} >> logs/extensions_log.txt 2>&1 # Append output from extensions_install function to logfile
 
-		# Exit this subscript and go back to the main menu
+		# Exit this script and go back to the main menu
 		break
 
 	# If user chose no
 	elif answer_no "$answer_extensions"; then
-		break # Exit this subscript and go back to the main menu
+		break # Exit this script and go back to the main menu
 
 	# If user inputs something besides yes/no/y/n
 	else

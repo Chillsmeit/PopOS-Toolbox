@@ -26,24 +26,24 @@ Main_Menu_Bottom_Text() {
 Read_Main_Menu_Choice() {
 	case $1 in
 		1)
-			source "subscripts/updates.sh"
+			source "src/updates.sh"
 			updates
 			;;
 		2)
-			source "subscripts/extensions.sh"
-			extensions
+			source "src/extensions_configure.sh"
+			extensions_configure
 			;;
 		3)
-			source "subscripts/themes.sh"
-			themes
+			source "src/themes_configure.sh"
+			themes_configure
 			;;
 		4)
-			source "subscripts/librewolf.sh"
-			librewolf
+			source "src/librewolf_install.sh"
+			librewolf_install
 			;;
 		5)
-			source "subscripts/imwheel.sh"
-			imwheel
+			source "src/imwheel_install.sh"
+			imwheel_install
 			;;
 		6)
 			echo "Exiting"
@@ -53,31 +53,6 @@ Read_Main_Menu_Choice() {
 			;;
 	esac
 }
-
-# Answer is yes function
-function answer_yes() {
-	case "$1" in
-		[Yy]|[Yy][Ee][Ss])
-			return 0
-			;;
-		*)
-			return 1
-			;;
-	esac
-}
-
-# Answer is no function
-function answer_no() {
-	case "$1" in
-		[Nn]|[Nn][Oo])
-			return 0
-			;;
-		*)
-			return 1
-			;;
-	esac
-}
-
 Menu_OneMessage() {
     local message="$1"
     local total_width=60

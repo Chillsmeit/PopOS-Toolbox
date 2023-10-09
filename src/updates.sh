@@ -12,7 +12,7 @@ updates() {
 	if answer_yes "$answer_update"; then
 		messagecolor=$red
 		Menu_TwoMessages "Updating system" "Please wait..."
-		{ sudo apt-get update -y && sudo apt-get dist-upgrade && sudo apt-get autoremove -y; } > logs/updates_log.txt 2>&1
+		{ sudo apt-get update -y && sudo apt-get dist-upgrade -y && sudo apt-get autoremove -y && flatpak update -y; } > logs/updates_log.txt 2>&1
 		
 		messagecolor=$green
 		Menu_OneMessage "System updated!"

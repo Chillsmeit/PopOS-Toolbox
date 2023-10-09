@@ -1,5 +1,5 @@
 #!/bin/bash
-installdependencies() {
+dependencies_install() {
     for dep in "${required_dependencies[@]}"; do
         # Check if the dependency is installed
         if ! dpkg -l | grep -q "^ii  $dep "; then

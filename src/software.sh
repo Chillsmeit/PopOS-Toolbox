@@ -62,8 +62,8 @@ software () {
 	"org.tenacityaudio.Tenacity"
 	)
 
-	# Load installflatpaks.sh
-	source "subscripts/installflatpaks.sh"
+	# Load flatpaks_install.sh
+	source "src/flatpaks_install.sh"
 	
 	# Export Array of required package names
 	required_dependencies=(
@@ -119,14 +119,10 @@ software () {
 	"remmina"
 	"wget"
 	"whois"
-	"yt-dlp"
-	
-	
-	
-	
+	"yt-dlp"	
 	)
 
-	# Execute missingpackages to check if packages are already installed
-	source "subscripts/installdependencies.sh"
-	installdependencies
+	# Execute dependencies_install to check if packages are already installed
+	source "src/dependencies_install.sh"
+	dependencies_install
 }

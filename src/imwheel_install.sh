@@ -1,6 +1,6 @@
 #!/bin/bash
 # Answer is yes function
-imwheel(){
+imwheel_install(){
 	# Display Menu for installing dependencies
 	clear
 	messagecolor=$red
@@ -9,11 +9,11 @@ imwheel(){
 	# Array of required dependencies
 	required_dependencies=("imwheel")
 		
-	# Load installdependencies.sh
-	source "subscripts/installdependencies.sh"
+	# Load dependencies_install.sh
+	source "src/dependencies_install.sh"
 		
-	# Execute installdependencies function to check if extensions are already installed and install if they're not
-	installdependencies > logs/extensions_log.txt 2>&1 # Send output from installdependencies function to logfile
+	# Execute dependencies_install function to check if extensions are already installed and install if they're not
+	dependencies_install > logs/extensions_log.txt 2>&1 # Send output from dependencies_install function to logfile
 	
 	# Create imwheel file if it doesn't exist
 	if [ ! -f ~/.imwheelrc ]; then
